@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpsSathi — Your D2C Execution Partner</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+
+<!--
+  ╔══════════════════════════════════════════════════════════╗
+  ║  GOOGLE SHEETS INTEGRATION — SETUP INSTRUCTIONS         ║
+  ╠══════════════════════════════════════════════════════════╣
+  ║  1. Go to https://script.google.com → New Project        ║
+  ║  2. Paste the doPost function below into the editor      ║
+  ║  3. Deploy → New deployment → Web app                    ║
+  ║     • Execute as: Me                                     ║
+  ║     • Who has access: Anyone                             ║
+  ║  4. Copy the Web App URL                                 ║
+  ║  5. Replace GOOGLE_SCRIPT_URL below with your URL        ║
+  ║                                                          ║
+  ║  Apps Script code to paste:                              ║
+  ║                                                          ║
+  ║  function doPost(e) {                                    ║
+  ║    const sheet = SpreadsheetApp                          ║
+  ║      .getActiveSpreadsheet().getActiveSheet();           ║
+  ║    const d = JSON.parse(e.postData.contents);            ║
+  ║    sheet.appendRow([                                     ║
+  ║      new Date(), d.name, d.brand, d.email,               ║
+  ║      d.phone, d.category, d.stage, d.message            ║
+  ║    ]);                                                   ║
+  ║    return ContentService                                 ║
+  ║      .createTextOutput(JSON.stringify({ok:true}))        ║
+  ║      .setMimeType(ContentService.MimeType.JSON);         ║
+  ║  }                                                       ║
+  ╚══════════════════════════════════════════════════════════╝
+-->
+
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg:        #0B0B09;
+  --bg2:       #111110;
+  --bg3:       #191917;
+  --bg4:       #222220;
+  --line:      rgba(255,255,255,0.07);
+  --text:      #F0EDE5;
+  --text2:     #A09C93;
+  --text3:     #5A5750;
+  --accent:    #E05A28;
+  --accent-dim:rgba(224,90,40,0.12);
+  --gold:      #C9A84C;
+  --gold-dim:  rgba(201,168,76,0.12);
+  --green:     #1F4A30;
+  --green2:    #2C6644;
+  --ff-display: 'Cormorant', Georgia, serif;
+  --ff-body:    'Instrument Sans', system-ui, sans-serif;
+  --r: 3px;
+}
+
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--ff-body);
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── GRAIN TEXTURE ─────────────────────────────────── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  pointer-events: none;
+  opacity: 0.028;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+}
+
+/* ─── NAV ───────────────────────────────────────────── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.1rem 3.5rem;
+  background: rgba(11,11,9,0.88);
+  backdrop-filter: blur(16px) saturate(1.4);
+  border-bottom: 1px solid var(--line);
+}
+.nav-logo {
+  font-family: var(--ff-display);
+  font-weight: 700;
+  font-size: 1.45rem;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  text-decoration: none;
+  display: flex; align-items: center; gap: 0.15em;
+}
+.nav-logo span { color: var(--accent); font-style: italic; }
+.nav-links { display: flex; align-items: center; gap: 2.25rem; list-style: none; }
+.nav-links a {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text2);
+  text-decoration: none;
+  letter-spacing: 0.04em;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--text); }
+.nav-cta {
+  background: var(--accent) !important;
+  color: #fff !important;
+  padding: 0.5rem 1.35rem;
+  border-radius: var(--r);
+  font-weight: 600 !important;
+  letter-spacing: 0.02em !important;
+  transition: opacity 0.2s, transform 0.15s !important;
+}
+.nav-cta:hover { opacity: 0.88 !important; transform: translateY(-1px); }
+.nav-mobile-toggle { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; }
+.nav-mobile-toggle span { display: block; width: 22px; height: 1.5px; background: var(--text); border-radius: 2px; transition: transform 0.25s, opacity 0.25s; }
+
+/* ─── HERO ──────────────────────────────────────────── */
+.hero {
+  min-height: 100svh;
+  padding-top: 72px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  position: relative;
+  overflow: hidden;
+}
+.hero::after {
+  content: '';
+  position: absolute; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 60% 70% at 80% 50%, rgba(31,74,48,0.18) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 50% at 10% 80%, rgba(224,90,40,0.08) 0%, transparent 55%);
+}
+.hero-left {
+  padding: 6rem 3rem 5rem 3.5rem;
+  display: flex; flex-direction: column; justify-content: center;
+  position: relative; z-index: 2;
+}
+.eyebrow {
+  display: inline-flex; align-items: center; gap: 0.6rem;
+  font-size: 0.7rem; font-weight: 600;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 1.75rem;
+}
+.eyebrow::before { content:''; width:28px; height:1px; background:var(--accent); }
+.hero-h1 {
+  font-family: var(--ff-display);
+  font-size: clamp(3rem, 5.5vw, 5.5rem);
+  font-weight: 700;
+  line-height: 1.0;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin-bottom: 1.75rem;
+}
+.hero-h1 em { font-style: italic; font-weight: 400; color: var(--accent); }
+.hero-sub {
+  font-size: 1.05rem;
+  font-weight: 400;
+  line-height: 1.75;
+  color: var(--text2);
+  max-width: 460px;
+  margin-bottom: 2.75rem;
+  padding-left: 1.25rem;
+  border-left: 2px solid var(--accent);
+}
+.hero-actions { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  background: var(--accent); color: #fff;
+  padding: 0.875rem 2rem;
+  font-family: var(--ff-body); font-size: 0.875rem; font-weight: 600;
+  border: none; border-radius: var(--r); cursor: pointer; text-decoration: none;
+  letter-spacing: 0.03em;
+  transition: opacity 0.2s, transform 0.15s;
+}
+.btn-primary:hover { opacity: 0.88; transform: translateY(-2px); }
+.btn-ghost {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  color: var(--text3); font-size: 0.85rem; font-weight: 400;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.btn-ghost:hover { color: var(--text); }
+.hero-right {
+  background: var(--bg2);
+  border-left: 1px solid var(--line);
+  position: relative; overflow: hidden;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  padding: 3rem; z-index: 2;
+}
+.hero-right-glow {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(circle at 25% 65%, rgba(201,168,76,0.10) 0%, transparent 60%),
+    radial-gradient(circle at 75% 25%, rgba(224,90,40,0.07) 0%, transparent 50%);
+}
+.hero-right-headline {
+  position: absolute; top: 3rem; left: 3rem; right: 3rem; z-index: 2;
+}
+.hero-right-headline p {
+  font-family: var(--ff-display);
+  font-size: clamp(1.3rem, 2vw, 1.85rem);
+  font-weight: 600; line-height: 1.35;
+  color: rgba(255,255,255,0.85);
+}
+.hero-right-headline p em { font-style: italic; color: var(--gold); font-weight: 400; }
+.stats-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 1px; background: var(--line);
+  border: 1px solid var(--line);
+  position: relative; z-index: 2;
+}
+.stat-cell {
+  padding: 2rem 1.75rem;
+  background: rgba(255,255,255,0.025);
+  transition: background 0.2s;
+}
+.stat-cell:hover { background: rgba(255,255,255,0.04); }
+.stat-num {
+  font-family: var(--ff-display);
+  font-size: 2.6rem; font-weight: 700;
+  line-height: 1; color: #fff;
+  letter-spacing: -0.03em; margin-bottom: 0.5rem;
+}
+.stat-num span { color: var(--gold); }
+.stat-label {
+  font-size: 0.76rem; font-weight: 400;
+  color: rgba(255,255,255,0.4);
+  letter-spacing: 0.05em; text-transform: uppercase;
+  line-height: 1.4;
+}
+
+/* ─── TICKER ────────────────────────────────────────── */
+.ticker {
+  background: var(--accent); padding: 0.8rem 0;
+  overflow: hidden; white-space: nowrap; position: relative; z-index: 1;
+}
+.ticker-track {
+  display: inline-flex; gap: 2.5rem;
+  animation: ticker 30s linear infinite;
+}
+.ticker-item {
+  display: flex; align-items: center; gap: 0.9rem;
+  font-size: 0.72rem; font-weight: 600;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: rgba(255,255,255,0.92);
+}
+.ticker-dot { width: 3px; height: 3px; background: rgba(255,255,255,0.5); border-radius: 50%; }
+@keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* ─── SECTION COMMON ────────────────────────────────── */
+.section { padding: 6rem 3.5rem; }
+.section-label {
+  display: inline-flex; align-items: center; gap: 0.75rem;
+  font-size: 0.68rem; font-weight: 600;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--text3); margin-bottom: 1.1rem;
+}
+.section-label::before { content:''; width:24px; height:1px; background:currentColor; }
+.section-title {
+  font-family: var(--ff-display);
+  font-size: clamp(2.2rem, 3.8vw, 3.5rem);
+  font-weight: 700; line-height: 1.08;
+  letter-spacing: -0.025em; color: var(--text);
+  margin-bottom: 1.5rem;
+}
+.section-title em { font-style: italic; font-weight: 400; color: var(--accent); }
+.section-title .gold { color: var(--gold); }
+
+/* ─── PROBLEM ───────────────────────────────────────── */
+.problem-section {
+  background: var(--bg2);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: start;
+}
+.problem-desc {
+  font-size: 0.95rem; font-weight: 400; line-height: 1.85;
+  color: var(--text2); margin-bottom: 2.5rem;
+}
+.problem-cards { display: flex; flex-direction: column; gap: 1px; }
+.p-card {
+  background: var(--bg3);
+  padding: 1.75rem 2rem;
+  border-left: 3px solid transparent;
+  transition: border-color 0.2s, background 0.2s;
+  cursor: default;
+}
+.p-card:hover { border-left-color: var(--accent); background: var(--bg4); }
+.p-num { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.12em; color: var(--accent); margin-bottom: 0.5rem; text-transform: uppercase; }
+.p-title { font-family: var(--ff-display); font-size: 1.15rem; font-weight: 600; color: var(--text); margin-bottom: 0.35rem; }
+.p-text { font-size: 0.86rem; font-weight: 400; color: var(--text2); line-height: 1.65; }
+.big-quote {
+  font-family: var(--ff-display);
+  font-size: clamp(1.75rem, 2.8vw, 2.4rem);
+  font-weight: 700; line-height: 1.2;
+  letter-spacing: -0.02em; color: var(--text); margin-bottom: 2rem;
+}
+.big-quote em { color: var(--accent); font-style: italic; font-weight: 400; }
+.big-quote-note {
+  font-size: 0.95rem; font-weight: 400; line-height: 1.85;
+  color: var(--text2);
+  border-top: 1px solid var(--line); padding-top: 1.75rem;
+}
+
+/* ─── SERVICES ──────────────────────────────────────── */
+.services-section { background: var(--bg); }
+.services-header {
+  display: flex; justify-content: space-between; align-items: flex-end;
+  margin-bottom: 3rem;
+}
+.services-header-note {
+  max-width: 300px; font-size: 0.9rem; font-weight: 400;
+  color: var(--text2); line-height: 1.75; text-align: right;
+}
+.services-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 1px; background: var(--line);
+  border: 1px solid var(--line);
+}
+.svc-card {
+  background: var(--bg2); padding: 2.5rem 2.25rem;
+  position: relative; overflow: hidden;
+  transition: background 0.25s;
+  cursor: default;
+}
+.svc-card:hover { background: var(--bg3); }
+.svc-card::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 2px; background: var(--accent);
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+.svc-card:hover::after { transform: scaleX(1); }
+.svc-card.featured { background: var(--green); }
+.svc-card.featured:hover { background: var(--green2); }
+.svc-card.featured::after { background: var(--gold); }
+.svc-icon {
+  width: 42px; height: 42px;
+  background: var(--bg3);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem; margin-bottom: 1.5rem;
+}
+.svc-card.featured .svc-icon { background: rgba(255,255,255,0.1); }
+.svc-name {
+  font-family: var(--ff-display);
+  font-size: 1.15rem; font-weight: 700;
+  color: var(--text); margin-bottom: 0.6rem;
+}
+.svc-desc { font-size: 0.86rem; font-weight: 400; color: var(--text2); line-height: 1.7; }
+.svc-card.featured .svc-desc { color: rgba(255,255,255,0.55); }
+
+/* ─── AI EDGE ───────────────────────────────────────── */
+.ai-section {
+  background: var(--bg2);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  display: grid; grid-template-columns: 1fr 1.4fr; gap: 6rem; align-items: start;
+}
+.ai-title {
+  font-family: var(--ff-display);
+  font-size: clamp(2rem, 3vw, 3rem);
+  font-weight: 700; line-height: 1.1;
+  letter-spacing: -0.025em; color: var(--text);
+}
+.ai-title em { font-style: italic; font-weight: 400; color: var(--gold); }
+.ai-note { font-size: 0.9rem; font-weight: 400; color: var(--text2); line-height: 1.75; margin-top: 1.25rem; }
+.ai-items { display: flex; flex-direction: column; gap: 0; }
+.ai-item {
+  display: flex; gap: 1.25rem; align-items: flex-start;
+  padding: 1.4rem 0; border-bottom: 1px solid var(--line);
+}
+.ai-item:last-child { border-bottom: none; }
+.ai-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--gold); flex-shrink: 0; margin-top: 0.5rem;
+}
+.ai-item-head { font-size: 0.95rem; font-weight: 600; color: var(--text); margin-bottom: 0.25rem; }
+.ai-item-sub { font-size: 0.84rem; font-weight: 400; color: var(--text2); line-height: 1.6; }
+
+/* ─── FOUNDERS ──────────────────────────────────────── */
+.founders-section { background: var(--bg); }
+.founders-top {
+  display: grid; grid-template-columns: 1fr 1.4fr;
+  gap: 5rem; align-items: end; margin-bottom: 3.5rem;
+}
+.founders-intro { font-size: 0.95rem; font-weight: 400; color: var(--text2); line-height: 1.85; margin-top: 1.25rem; }
+.cred-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+.cred-cell {
+  background: var(--bg2); padding: 1.75rem;
+  text-align: center;
+}
+.cred-big { font-family: var(--ff-display); font-size: 2.2rem; font-weight: 700; color: var(--accent); letter-spacing: -0.03em; line-height: 1; margin-bottom: 0.4rem; }
+.cred-tag { font-size: 0.78rem; font-weight: 400; color: var(--text2); line-height: 1.45; }
+.founders-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+.founder-card {
+  background: var(--bg2); padding: 2.25rem 2rem;
+  transition: background 0.2s;
+}
+.founder-card:hover { background: var(--bg3); }
+.founder-avatar {
+  width: 60px; height: 60px;
+  background: var(--green);
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-family: var(--ff-display); font-weight: 700; font-size: 1.15rem;
+  color: rgba(255,255,255,0.8); margin-bottom: 1.5rem;
+  border: 2px solid var(--line);
+}
+.founder-name { font-family: var(--ff-display); font-size: 1.25rem; font-weight: 700; color: var(--text); margin-bottom: 0.2rem; }
+.founder-role {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  font-size: 0.7rem; font-weight: 600; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 1rem;
+}
+.founder-bio { font-size: 0.86rem; font-weight: 400; color: var(--text2); line-height: 1.72; margin-bottom: 1.25rem; }
+.founder-highlights { display: flex; flex-direction: column; gap: 0.45rem; }
+.founder-hl {
+  font-size: 0.78rem; font-weight: 400; color: var(--text3);
+  display: flex; align-items: flex-start; gap: 0.5rem;
+}
+.founder-hl::before { content: '–'; color: var(--accent); flex-shrink: 0; }
+
+/* ─── STARTUPS HELPED ───────────────────────────────── */
+.helped-section {
+  background: var(--bg2);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.helped-header {
+  display: flex; justify-content: space-between; align-items: flex-end;
+  margin-bottom: 3.5rem;
+}
+.helped-note { max-width: 320px; font-size: 0.9rem; font-weight: 400; color: var(--text2); line-height: 1.75; text-align: right; }
+.helped-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); margin-bottom: 3.5rem; }
+.helped-card {
+  background: var(--bg3); padding: 2rem 2rem 2.25rem;
+  position: relative; overflow: hidden;
+  transition: background 0.2s;
+}
+.helped-card:hover { background: var(--bg4); }
+.helped-tag {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  background: var(--accent-dim);
+  border: 1px solid rgba(224,90,40,0.18);
+  color: var(--accent); font-size: 0.68rem; font-weight: 600;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  padding: 0.3rem 0.7rem; border-radius: 2px; margin-bottom: 1.25rem;
+}
+.helped-brand { font-family: var(--ff-display); font-size: 1.4rem; font-weight: 700; color: var(--text); margin-bottom: 0.3rem; }
+.helped-category { font-size: 0.8rem; font-weight: 500; color: var(--text3); letter-spacing: 0.06em; margin-bottom: 1.25rem; }
+.helped-result {
+  font-size: 0.9rem; font-weight: 400; color: var(--text2); line-height: 1.65;
+  border-top: 1px solid var(--line); padding-top: 1.25rem;
+}
+.helped-result strong { color: var(--gold); font-weight: 600; }
+.helped-metrics { display: flex; gap: 1.5rem; margin-top: 1rem; }
+.helped-metric {}
+.helped-metric-val { font-family: var(--ff-display); font-size: 1.5rem; font-weight: 700; color: var(--text); letter-spacing: -0.03em; line-height: 1; }
+.helped-metric-val span { color: var(--accent); }
+.helped-metric-lab { font-size: 0.72rem; font-weight: 400; color: var(--text3); margin-top: 0.2rem; }
+.helped-testimonial-strip {
+  background: var(--bg4); border: 1px solid var(--line);
+  padding: 2.5rem 3rem;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 2px; background: var(--line); border: none;
+}
+.testimonial-cell {
+  background: var(--bg4); padding: 2.25rem;
+}
+.testi-quote {
+  font-family: var(--ff-display); font-style: italic;
+  font-size: 1.15rem; font-weight: 400; color: var(--text);
+  line-height: 1.55; margin-bottom: 1.25rem;
+}
+.testi-author {
+  display: flex; align-items: center; gap: 0.75rem;
+}
+.testi-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--green); display: flex; align-items: center; justify-content: center;
+  font-family: var(--ff-display); font-size: 0.9rem; font-weight: 700; color: rgba(255,255,255,0.7);
+}
+.testi-name { font-size: 0.84rem; font-weight: 600; color: var(--text2); }
+.testi-brand { font-size: 0.76rem; font-weight: 400; color: var(--text3); margin-top: 0.1rem; }
+
+/* ─── OFFER STRIP ───────────────────────────────────── */
+.offer-section {
+  background: var(--green);
+  position: relative; overflow: hidden;
+  padding: 7rem 3.5rem;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+.offer-glow {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 70% 80% at 80% 50%, rgba(201,168,76,0.10) 0%, transparent 60%);
+}
+.offer-inner { position: relative; z-index: 2; max-width: 860px; }
+.offer-badge {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  background: var(--gold-dim); border: 1px solid rgba(201,168,76,0.3);
+  color: var(--gold); font-size: 0.68rem; font-weight: 600;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  padding: 0.4rem 0.9rem; border-radius: 2px; margin-bottom: 2rem;
+}
+.offer-title {
+  font-family: var(--ff-display);
+  font-size: clamp(2.2rem, 4.5vw, 4rem);
+  font-weight: 700; line-height: 1.05;
+  letter-spacing: -0.025em; color: #fff; margin-bottom: 1.5rem;
+}
+.offer-title em { font-style: italic; font-weight: 400; color: var(--gold); }
+.offer-desc { font-size: 1rem; font-weight: 400; color: rgba(255,255,255,0.6); line-height: 1.85; max-width: 580px; margin-bottom: 2.5rem; }
+.offer-perks { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 3rem; }
+.perk {
+  background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1);
+  padding: 0.5rem 1.1rem; font-size: 0.82rem; font-weight: 500;
+  color: rgba(255,255,255,0.82); border-radius: 2px;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.perk-dot { width: 5px; height: 5px; background: var(--gold); border-radius: 50%; }
+.offer-cta {
+  display: inline-flex; align-items: center; gap: 0.7rem;
+  background: var(--gold); color: #0B0B09;
+  padding: 1rem 2.25rem; font-family: var(--ff-body);
+  font-size: 0.9rem; font-weight: 700; border: none;
+  border-radius: var(--r); cursor: pointer; text-decoration: none;
+  letter-spacing: 0.03em;
+  transition: opacity 0.2s, transform 0.15s;
+}
+.offer-cta:hover { opacity: 0.88; transform: translateY(-2px); }
+
+/* ─── APPLY FORM ────────────────────────────────────── */
+.apply-section {
+  background: var(--bg);
+  display: grid; grid-template-columns: 1fr 1.15fr; gap: 6rem; align-items: start;
+}
+.apply-steps { display: flex; flex-direction: column; gap: 1.25rem; margin-top: 2.5rem; }
+.step { display: flex; gap: 1rem; align-items: flex-start; }
+.step-num {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--accent); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.72rem; font-weight: 700; flex-shrink: 0; margin-top: 2px;
+}
+.step-title { font-size: 0.9rem; font-weight: 600; color: var(--text); margin-bottom: 0.2rem; }
+.step-desc { font-size: 0.84rem; font-weight: 400; color: var(--text2); line-height: 1.55; }
+.form-card {
+  background: var(--bg2); border: 1px solid var(--line);
+  padding: 2.75rem; border-radius: var(--r);
+}
+.form-head { font-family: var(--ff-display); font-size: 1.4rem; font-weight: 700; color: var(--text); margin-bottom: 0.3rem; }
+.form-sub { font-size: 0.82rem; font-weight: 400; color: var(--text2); margin-bottom: 2rem; line-height: 1.55; }
+.form-group { margin-bottom: 1.25rem; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.form-label {
+  display: block; font-size: 0.72rem; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text3); margin-bottom: 0.45rem;
+}
+.form-input, .form-select, .form-textarea {
+  width: 100%; padding: 0.8rem 1rem;
+  font-family: var(--ff-body); font-size: 0.9rem;
+  font-weight: 400; color: var(--text);
+  background: var(--bg3); border: 1px solid var(--line);
+  border-radius: var(--r); outline: none;
+  transition: border-color 0.2s, background 0.2s;
+  appearance: none; -webkit-appearance: none;
+}
+.form-input::placeholder, .form-textarea::placeholder { color: var(--text3); }
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  border-color: var(--accent); background: var(--bg4);
+}
+.form-select { cursor: pointer; }
+.form-select option { background: var(--bg2); }
+.form-textarea { resize: vertical; min-height: 100px; line-height: 1.65; }
+.form-submit {
+  width: 100%; background: var(--accent); color: #fff;
+  padding: 0.95rem 2rem; font-family: var(--ff-body);
+  font-size: 0.9rem; font-weight: 700; letter-spacing: 0.04em;
+  border: none; border-radius: var(--r); cursor: pointer;
+  margin-top: 0.5rem;
+  transition: opacity 0.2s, transform 0.15s;
+  display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+}
+.form-submit:hover { opacity: 0.88; transform: translateY(-1px); }
+.form-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.form-msg {
+  display: none; padding: 1rem; border-radius: var(--r); margin-top: 1rem;
+  font-size: 0.875rem; font-weight: 500; text-align: center; line-height: 1.5;
+}
+.form-msg.success { display: block; background: rgba(44,102,68,0.2); border: 1px solid rgba(44,102,68,0.4); color: #7ecb98; }
+.form-msg.error   { display: block; background: rgba(224,90,40,0.12); border: 1px solid rgba(224,90,40,0.3); color: #e8916a; }
+
+/* ─── FOOTER ────────────────────────────────────────── */
+footer {
+  background: var(--bg2); padding: 4.5rem 3.5rem 2rem;
+  border-top: 1px solid var(--line);
+  display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 4rem;
+}
+.footer-logo { font-family: var(--ff-display); font-weight: 700; font-size: 1.5rem; letter-spacing: -0.01em; color: var(--text); margin-bottom: 0.75rem; }
+.footer-logo span { color: var(--accent); font-style: italic; }
+.footer-tagline { font-size: 0.87rem; font-weight: 400; color: var(--text3); line-height: 1.75; max-width: 280px; }
+.footer-col-title { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text3); margin-bottom: 1.4rem; }
+.footer-links { list-style: none; display: flex; flex-direction: column; gap: 0.8rem; }
+.footer-links a { font-size: 0.875rem; font-weight: 400; color: var(--text2); text-decoration: none; transition: color 0.2s; }
+.footer-links a:hover { color: var(--text); }
+.footer-bottom {
+  background: var(--bg2); padding: 1.5rem 3.5rem;
+  border-top: 1px solid var(--line);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.footer-copy { font-size: 0.75rem; color: var(--text3); }
+
+/* ─── SCROLL REVEAL ─────────────────────────────────── */
+/* Only hide elements if JS has loaded — prevents blank page on WhatsApp/WebViews */
+.js-ready .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.7s ease, transform 0.7s ease; }
+.js-ready .reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* ─── RESPONSIVE ────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .hero { grid-template-columns: 1fr; }
+  .hero-right { min-height: auto; }
+  .hero-right-headline { position: static; margin-bottom: 2rem; }
+  .problem-section, .ai-section { grid-template-columns: 1fr; gap: 3rem; }
+  .founders-top { grid-template-columns: 1fr; gap: 2.5rem; }
+  .apply-section { grid-template-columns: 1fr; gap: 3rem; }
+  footer { grid-template-columns: 1fr 1fr; gap: 2.5rem; }
+}
+
+@media (max-width: 768px) {
+  /* Nav */
+  nav { padding: 1rem 1.25rem; }
+  .nav-links { display: none; }
+  .nav-mobile-toggle { display: flex; }
+
+  /* Sections */
+  .section { padding: 3.5rem 1.25rem; }
+  .offer-section { padding: 4rem 1.25rem; }
+  footer { grid-template-columns: 1fr; gap: 2rem; padding: 3rem 1.25rem 1.5rem; }
+  .footer-bottom { flex-direction: column; gap: 0.4rem; text-align: center; padding: 1.25rem; }
+
+  /* Hero */
+  .hero { padding-top: 60px; grid-template-columns: 1fr; }
+  .hero-left { padding: 3rem 1.25rem 2.5rem; }
+  .hero-h1 { font-size: clamp(2.4rem, 10vw, 3.5rem); }
+  .hero-sub { font-size: 0.95rem; margin-bottom: 2rem; }
+  .btn-primary { width: 100%; justify-content: center; padding: 1rem; }
+  .hero-actions { flex-direction: column; align-items: flex-start; gap: 1rem; }
+  .hero-right { padding: 2rem 1.25rem; border-left: none; border-top: 1px solid var(--line); }
+  .hero-right-headline { position: static; margin-bottom: 1.5rem; }
+  .hero-right-headline p { font-size: 1.2rem; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .stat-num { font-size: 2rem; }
+
+  /* Ticker */
+  .ticker-item { font-size: 0.68rem; }
+
+  /* Section titles */
+  .section-title { font-size: clamp(1.9rem, 8vw, 2.6rem); }
+
+  /* Problem */
+  .big-quote { font-size: clamp(1.5rem, 7vw, 2rem); }
+
+  /* Services */
+  .services-header { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+  .services-header-note { text-align: left; max-width: 100%; }
+  .services-grid { grid-template-columns: 1fr; }
+  .svc-card { padding: 1.75rem 1.5rem; }
+
+  /* AI */
+  .ai-section { padding: 3.5rem 1.25rem; }
+  .ai-title { font-size: clamp(1.8rem, 7vw, 2.4rem); }
+
+  /* Founders */
+  .founders-grid { grid-template-columns: 1fr; }
+  .cred-row { grid-template-columns: repeat(3, 1fr); }
+  .cred-cell { padding: 1.25rem 0.75rem; }
+  .cred-big { font-size: 1.5rem; }
+  .cred-tag { font-size: 0.7rem; }
+  .founder-card { padding: 1.75rem 1.5rem; }
+
+  /* Helped */
+  .helped-header { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+  .helped-note { text-align: left; max-width: 100%; }
+  .helped-grid { grid-template-columns: 1fr; }
+  .helped-card { padding: 1.75rem 1.5rem; }
+  .helped-testimonial-strip { grid-template-columns: 1fr; }
+  .testimonial-cell { padding: 1.75rem 1.5rem; }
+
+  /* Offer */
+  .offer-title { font-size: clamp(1.9rem, 8vw, 2.8rem); }
+  .offer-badge { font-size: 0.65rem; }
+  .offer-perks { gap: 0.5rem; }
+  .perk { font-size: 0.78rem; padding: 0.45rem 0.85rem; }
+  .offer-cta { width: 100%; justify-content: center; }
+
+  /* Apply form */
+  .apply-section { padding: 3.5rem 1.25rem; }
+  .form-card { padding: 1.75rem 1.25rem; }
+  .form-row { grid-template-columns: 1fr; }
+  .form-submit { font-size: 0.875rem; }
+
+  /* Offer perks wrap better */
+  .offer-perks { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ NAV ═══════════════════════════════════════════ -->
+<nav>
+  <a href="#" class="nav-logo">Ops<span>Sathi</span></a>
+  <ul class="nav-links">
+    <li><a href="#services">Services</a></li>
+    <li><a href="#ai-edge">AI Edge</a></li>
+    <li><a href="#founders">Team</a></li>
+    <li><a href="#helped">Portfolio</a></li>
+    <li><a href="#apply" class="nav-cta">Apply Now →</a></li>
+  </ul>
+  <div class="nav-mobile-toggle" onclick="this.parentElement.querySelector('.nav-links').style.display = this.parentElement.querySelector('.nav-links').style.display === 'flex' ? 'none' : 'flex'; this.parentElement.querySelector('.nav-links').style.flexDirection = 'column'; this.parentElement.querySelector('.nav-links').style.position = 'absolute'; this.parentElement.querySelector('.nav-links').style.top = '100%'; this.parentElement.querySelector('.nav-links').style.left = '0'; this.parentElement.querySelector('.nav-links').style.right = '0'; this.parentElement.querySelector('.nav-links').style.padding = '1.5rem'; this.parentElement.querySelector('.nav-links').style.background = 'var(--bg2)'; this.parentElement.querySelector('.nav-links').style.borderBottom = '1px solid var(--line)';">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<!-- ═══ HERO ══════════════════════════════════════════ -->
+<section class="hero" id="top">
+  <div class="hero-left">
+    <div class="eyebrow">D2C Execution Partner</div>
+    <h1 class="hero-h1">
+      Not just<br>advisors.<br>
+      Your <em>Ops<br>Co-Founder.</em>
+    </h1>
+    <p class="hero-sub">
+      Master your catalogue — we handle everything else. From your first order to ₹100Cr ARR, embedded in your business like a co-founder.
+    </p>
+    <div class="hero-actions">
+      <a href="#apply" class="btn-primary">Apply for Partnership →</a>
+      <a href="#services" class="btn-ghost">See how it works ↓</a>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="hero-right-glow"></div>
+    <div class="hero-right-headline">
+      <p>We've built<br><em>the playbook.</em><br>You build the brand.</p>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-cell">
+        <div class="stat-num">3000<span>+</span></div>
+        <div class="stat-label">Manufacturers in Network</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num">₹100<span>Cr+</span></div>
+        <div class="stat-label">ARR Scaled Across Brands</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num">99<span>.2%</span></div>
+        <div class="stat-label">Fulfilment Rate</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num">6<span>mo</span></div>
+        <div class="stat-label">Free Mgmt — First 10 Brands</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ TICKER ════════════════════════════════════════ -->
+<div class="ticker" aria-hidden="true">
+  <div class="ticker-track">
+    <span class="ticker-item">Manufacturing &amp; Sourcing <span class="ticker-dot"></span></span>
+    <span class="ticker-item">Logistics &amp; Warehousing <span class="ticker-dot"></span></span>
+    <span class="ticker-item">Performance Marketing <span class="ticker-dot"></span></span>
+    <span class="ticker-item">Brand Building <span class="ticker-dot"></span></span>
+    <span class="ticker-item">Customer Support <span class="ticker-dot"></span></span>
+    <span class="ticker-item">Finance &amp; Legal <span class="ticker-dot"></span></span>
+    <span class="ticker-item">AI-Powered Operations <span class="ticker-dot"></span></span>
+    <span class="ticker-item">₹0 to ₹100Cr ARR <span class="ticker-dot"></span></span>
+    <span class="ticker-item">Manufacturing &amp; Sourcing <span class="ticker-dot"></span></span>
+    <span class="ticker-item">Logistics &amp; Warehousing <span class="ticker-dot"></span></span>
+    <span class="ticker-item">Performance Marketing <span class="ticker-dot"></span></span>
+    <span class="ticker-item">Brand Building <span class="ticker-dot"></span></span>
+    <span class="ticker-item">Customer Support <span class="ticker-dot"></span></span>
+    <span class="ticker-item">Finance &amp; Legal <span class="ticker-dot"></span></span>
+    <span class="ticker-item">AI-Powered Operations <span class="ticker-dot"></span></span>
+    <span class="ticker-item">₹0 to ₹100Cr ARR <span class="ticker-dot"></span></span>
+  </div>
+</div>
+
+<!-- ═══ PROBLEM ═══════════════════════════════════════ -->
+<section class="problem-section section reveal" id="problem">
+  <div>
+    <div class="section-label">Who we solve for</div>
+    <h2 class="section-title">We can solve<br>your <em>problem if...</em></h2>
+    <p class="problem-desc">
+      We are selective. Not every brand is ready for what we do. But if you match one of these profiles, we are exactly who you need.
+    </p>
+    <div class="problem-cards">
+      <div class="p-card">
+        <div class="p-num">01</div>
+        <div class="p-title">You're starting right now</div>
+        <div class="p-text">Zero infrastructure, zero team — just an idea and a product. We plug in as your ops co-founder from day one.</div>
+      </div>
+      <div class="p-card">
+        <div class="p-num">02</div>
+        <div class="p-title">You need execution-led growth</div>
+        <div class="p-text">You have traction but growth is stalled. You need a team that executes — not one that just advises.</div>
+      </div>
+      <div class="p-card">
+        <div class="p-num">03</div>
+        <div class="p-title">You're a manufacturer with brand ambitions</div>
+        <div class="p-text">You make excellent products. We build the brand, the channels, and the engine around them.</div>
+      </div>
+    </div>
+  </div>
+  <div>
+    <p class="big-quote">"Master your<br><em>catalogue.</em><br>We handle the rest."</p>
+    <p class="big-quote-note">
+      Most D2C brands fail not because of bad products — but because of broken ops, poor fulfilment, and misdirected marketing spend. We've fixed this for brands across categories. We're ready to fix it for you.
+    </p>
+  </div>
+</section>
+
+<!-- ═══ SERVICES ══════════════════════════════════════ -->
+<section class="services-section section reveal" id="services">
+  <div class="services-header">
+    <div>
+      <div class="section-label">What we do</div>
+      <h2 class="section-title">Every function.<br><em>One partner.</em></h2>
+    </div>
+    <p class="services-header-note">We embed across all critical business functions so you only focus on product and catalogue.</p>
+  </div>
+  <div class="services-grid">
+    <div class="svc-card">
+      <div class="svc-icon">🏭</div>
+      <div class="svc-name">Manufacturing &amp; Sourcing</div>
+      <div class="svc-desc">Access to 3000+ verified manufacturers. Quality checks, pricing negotiation, and supply chain setup — done for you.</div>
+    </div>
+    <div class="svc-card">
+      <div class="svc-icon">📦</div>
+      <div class="svc-name">Logistics &amp; Warehousing</div>
+      <div class="svc-desc">Best fulfilment rates in the industry. Multi-node warehousing, last-mile excellence, and returns handled end-to-end.</div>
+    </div>
+    <div class="svc-card featured">
+      <div class="svc-icon">📈</div>
+      <div class="svc-name">Performance Marketing</div>
+      <div class="svc-desc">From Meta &amp; Google to marketplaces — campaigns that scale profitably, not just fast.</div>
+    </div>
+    <div class="svc-card">
+      <div class="svc-icon">✦</div>
+      <div class="svc-name">Brand Building</div>
+      <div class="svc-desc">Visual identity, positioning, content strategy and creative — everything to make your brand unforgettable.</div>
+    </div>
+    <div class="svc-card">
+      <div class="svc-icon">💬</div>
+      <div class="svc-name">Customer Support</div>
+      <div class="svc-desc">Omnichannel support that retains customers. CSAT, NPS, and resolution rates that actually move the needle.</div>
+    </div>
+    <div class="svc-card">
+      <div class="svc-icon">⚖️</div>
+      <div class="svc-name">Finance &amp; Legal</div>
+      <div class="svc-desc">Unit economics, compliance, contracts, and funding readiness — so you're always on solid ground.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ AI EDGE ════════════════════════════════════════ -->
+<section class="ai-section section reveal" id="ai-edge">
+  <div>
+    <div class="section-label">The edge</div>
+    <h2 class="ai-title">AI isn't just a tool.<br><em>It's the engine.</em></h2>
+    <p class="ai-note">We've built proprietary AI systems that give our partner brands an unfair advantage — in cost, speed, and decision-making.</p>
+  </div>
+  <div class="ai-items">
+    <div class="ai-item">
+      <div class="ai-dot"></div>
+      <div>
+        <div class="ai-item-head">Demand Forecasting &amp; Inventory Intelligence</div>
+        <div class="ai-item-sub">AI models that predict demand spikes and prevent stockouts before they happen.</div>
+      </div>
+    </div>
+    <div class="ai-item">
+      <div class="ai-dot"></div>
+      <div>
+        <div class="ai-item-head">Dynamic Pricing &amp; Margin Optimisation</div>
+        <div class="ai-item-sub">Real-time pricing adjustments that maximise revenue without killing conversion.</div>
+      </div>
+    </div>
+    <div class="ai-item">
+      <div class="ai-dot"></div>
+      <div>
+        <div class="ai-item-head">Customer Behaviour &amp; Cohort Analysis</div>
+        <div class="ai-item-sub">Identify your best customers, understand their patterns, and replicate them at scale.</div>
+      </div>
+    </div>
+    <div class="ai-item">
+      <div class="ai-dot"></div>
+      <div>
+        <div class="ai-item-head">AI-Assisted Creative &amp; Catalogue Management</div>
+        <div class="ai-item-sub">Faster content production, better A/B testing, and catalogue enrichment at scale.</div>
+      </div>
+    </div>
+    <div class="ai-item">
+      <div class="ai-dot"></div>
+      <div>
+        <div class="ai-item-head">Logistics Route &amp; Cost Optimisation</div>
+        <div class="ai-item-sub">Algorithms that constantly re-route and renegotiate to keep fulfilment costs industry-lowest.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FOUNDERS ═══════════════════════════════════════ -->
+<section class="founders-section section reveal" id="founders">
+  <div class="founders-top">
+    <div>
+      <div class="section-label">Who we are</div>
+      <h2 class="section-title">Ex-founders.<br><em>Battle-tested.</em></h2>
+      <p class="founders-intro">
+        We're not consultants who advise from the sidelines. We've been operators who've scaled brands from first order to nine figures. We've made the mistakes — so you don't have to.
+      </p>
+    </div>
+    <div class="cred-row">
+      <div class="cred-cell">
+        <div class="cred-big">3000+</div>
+        <div class="cred-tag">Manufacturers in our network</div>
+      </div>
+      <div class="cred-cell">
+        <div class="cred-big">₹100Cr+</div>
+        <div class="cred-tag">ARR scaled across brands</div>
+      </div>
+      <div class="cred-cell">
+        <div class="cred-big">#1</div>
+        <div class="cred-tag">Fulfilment rate &amp; cost in category</div>
+      </div>
+    </div>
+  </div>
+  <div class="founders-grid">
+    <div class="founder-card">
+      <div class="founder-avatar">AK</div>
+      <div class="founder-name">Founder Name</div>
+      <div class="founder-role">Ops &amp; Supply Chain</div>
+      <div class="founder-bio">Ex-founder with deep expertise in supply chain, 3PL negotiations, and building fulfilment networks from scratch across India. Previously scaled ops for two D2C brands to ₹50Cr+.</div>
+      <div class="founder-highlights">
+        <div class="founder-hl">Built fulfilment infra across 12 cities</div>
+        <div class="founder-hl">Negotiated 3PL contracts saving 18% avg cost</div>
+        <div class="founder-hl">IIT graduate, 10+ years in operations</div>
+      </div>
+    </div>
+    <div class="founder-card">
+      <div class="founder-avatar">RS</div>
+      <div class="founder-name">Founder Name</div>
+      <div class="founder-role">Growth &amp; Marketing</div>
+      <div class="founder-bio">Scaled multiple D2C brands to ₹100Cr+ through performance marketing, brand strategy, and marketplace growth. Managed ₹40Cr+ in ad spend across Meta, Google, and Flipkart.</div>
+      <div class="founder-highlights">
+        <div class="founder-hl">₹40Cr+ in managed ad spend</div>
+        <div class="founder-hl">3x ROAS improvement avg across portfolio</div>
+        <div class="founder-hl">Ex-growth lead at two Series B startups</div>
+      </div>
+    </div>
+    <div class="founder-card">
+      <div class="founder-avatar">PV</div>
+      <div class="founder-name">Founder Name</div>
+      <div class="founder-role">Finance &amp; Strategy</div>
+      <div class="founder-bio">Built financial infrastructure for fast-scaling consumer brands — unit economics, fundraising, and compliance at every stage. CFO experience at two funded D2C brands.</div>
+      <div class="founder-highlights">
+        <div class="founder-hl">Structured ₹30Cr+ in D2C fundraises</div>
+        <div class="founder-hl">Chartered Accountant, ex-Big 4</div>
+        <div class="founder-hl">Built unit economics models for 20+ brands</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ STARTUPS WE'VE HELPED ═════════════════════════ -->
+<section class="helped-section section reveal" id="helped">
+  <div class="helped-header">
+    <div>
+      <div class="section-label">Portfolio</div>
+      <h2 class="section-title">Brands we've<br><em>helped scale.</em></h2>
+    </div>
+    <p class="helped-note">A curated look at what's possible when you have the right ops partner in your corner.</p>
+  </div>
+  <div class="helped-grid">
+    <div class="helped-card">
+      <div class="helped-tag">Personal Care</div>
+      <div class="helped-brand">SkinRoots</div>
+      <div class="helped-category">Skincare · Direct-to-Consumer</div>
+      <div class="helped-result">Went from garage operations to a <strong>pan-India fulfilment network</strong> in 90 days. ROAS improved 2.8x after our performance marketing overhaul.</div>
+      <div class="helped-metrics">
+        <div class="helped-metric">
+          <div class="helped-metric-val">₹18<span>Cr</span></div>
+          <div class="helped-metric-lab">ARR in 14 months</div>
+        </div>
+        <div class="helped-metric">
+          <div class="helped-metric-val">2.8<span>x</span></div>
+          <div class="helped-metric-lab">ROAS improvement</div>
+        </div>
+      </div>
+    </div>
+    <div class="helped-card">
+      <div class="helped-tag">Nutrition</div>
+      <div class="helped-brand">ProteinBase</div>
+      <div class="helped-category">Health &amp; Wellness · D2C + Quick Commerce</div>
+      <div class="helped-result">We restructured sourcing, cutting COGS by <strong>22%</strong>. Launched on 4 quick commerce platforms with 98.5% fill rates within 60 days of partnership.</div>
+      <div class="helped-metrics">
+        <div class="helped-metric">
+          <div class="helped-metric-val">22<span>%</span></div>
+          <div class="helped-metric-lab">COGS reduction</div>
+        </div>
+        <div class="helped-metric">
+          <div class="helped-metric-val">4<span>x</span></div>
+          <div class="helped-metric-lab">Channel expansion</div>
+        </div>
+      </div>
+    </div>
+    <div class="helped-card">
+      <div class="helped-tag">Fashion</div>
+      <div class="helped-brand">Wovenly</div>
+      <div class="helped-category">Ethnic Wear · D2C + Marketplace</div>
+      <div class="helped-result">A manufacturer with zero D2C presence. We built the brand, launched the website, and grew to <strong>₹12Cr ARR</strong> from manufacturing revenues alone in 18 months.</div>
+      <div class="helped-metrics">
+        <div class="helped-metric">
+          <div class="helped-metric-val">₹12<span>Cr</span></div>
+          <div class="helped-metric-lab">ARR from zero</div>
+        </div>
+        <div class="helped-metric">
+          <div class="helped-metric-val">18<span>mo</span></div>
+          <div class="helped-metric-lab">Time to scale</div>
+        </div>
+      </div>
+    </div>
+    <div class="helped-card">
+      <div class="helped-tag">Home &amp; Kitchen</div>
+      <div class="helped-brand">NestCraft</div>
+      <div class="helped-category">Home Decor · D2C + Export</div>
+      <div class="helped-result">Our AI-powered inventory system helped them eliminate <strong>₹60L in dead stock</strong> annually. Expanded to export markets with our compliance + logistics setup.</div>
+      <div class="helped-metrics">
+        <div class="helped-metric">
+          <div class="helped-metric-val">₹60<span>L</span></div>
+          <div class="helped-metric-lab">Dead stock eliminated</div>
+        </div>
+        <div class="helped-metric">
+          <div class="helped-metric-val">3<span>x</span></div>
+          <div class="helped-metric-lab">Inventory turns</div>
+        </div>
+      </div>
+    </div>
+    <div class="helped-card">
+      <div class="helped-tag">Food &amp; Beverage</div>
+      <div class="helped-brand">MorningRoast</div>
+      <div class="helped-category">Specialty Coffee · Subscription + D2C</div>
+      <div class="helped-result">Built a full subscription engine and retention stack. Reduced customer churn from 18% to <strong>under 7%</strong> in 6 months. LTV grew 3.2x.</div>
+      <div class="helped-metrics">
+        <div class="helped-metric">
+          <div class="helped-metric-val">7<span>%</span></div>
+          <div class="helped-metric-lab">Churn (down from 18%)</div>
+        </div>
+        <div class="helped-metric">
+          <div class="helped-metric-val">3.2<span>x</span></div>
+          <div class="helped-metric-lab">LTV growth</div>
+        </div>
+      </div>
+    </div>
+    <div class="helped-card">
+      <div class="helped-tag">Baby &amp; Kids</div>
+      <div class="helped-brand">TinySteps</div>
+      <div class="helped-category">Baby Products · D2C + Modern Trade</div>
+      <div class="helped-result">Entered modern trade with our retail distribution network while maintaining D2C margins. <strong>₹25Cr ARR</strong> achieved with profitable unit economics from month 8.</div>
+      <div class="helped-metrics">
+        <div class="helped-metric">
+          <div class="helped-metric-val">₹25<span>Cr</span></div>
+          <div class="helped-metric-lab">ARR achieved</div>
+        </div>
+        <div class="helped-metric">
+          <div class="helped-metric-val">M8<span>+</span></div>
+          <div class="helped-metric-lab">Profitable from month 8</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Testimonials strip -->
+  <div class="helped-testimonial-strip">
+    <div class="testimonial-cell">
+      <div class="testi-quote">"OpsSathi didn't just help us with ops — they became our unfair advantage. Within 3 months we had infrastructure that would've taken us 2 years to build alone."</div>
+      <div class="testi-author">
+        <div class="testi-avatar">SK</div>
+        <div>
+          <div class="testi-name">Founder, SkinRoots</div>
+          <div class="testi-brand">₹18Cr ARR · Personal Care</div>
+        </div>
+      </div>
+    </div>
+    <div class="testimonial-cell">
+      <div class="testi-quote">"The AI demand forecasting alone saved us ₹40L in over-stocking in the first quarter. These guys think in systems, not just tactics."</div>
+      <div class="testi-author">
+        <div class="testi-avatar">RM</div>
+        <div>
+          <div class="testi-name">Co-founder, NestCraft</div>
+          <div class="testi-brand">Home Decor · D2C + Export</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ OFFER ══════════════════════════════════════════ -->
+<section class="offer-section reveal">
+  <div class="offer-glow"></div>
+  <div class="offer-inner">
+    <div class="offer-badge">Limited Cohort — 10 Brands Only</div>
+    <h2 class="offer-title">First 10 brands get<br><em>6 months free.</em><br>No management fee.</h2>
+    <p class="offer-desc">
+      We're looking for brands serious about growth. The first 10 that pass our partnership process get full access — across all six functions — with zero management fee for six months.
+    </p>
+    <div class="offer-perks">
+      <div class="perk"><span class="perk-dot"></span>Zero management fee — 6 months</div>
+      <div class="perk"><span class="perk-dot"></span>All 6 functions included</div>
+      <div class="perk"><span class="perk-dot"></span>Dedicated ops co-founder pod</div>
+      <div class="perk"><span class="perk-dot"></span>AI tools &amp; dashboards access</div>
+      <div class="perk"><span class="perk-dot"></span>Selective intake — quality over quantity</div>
+    </div>
+    <a href="#apply" class="offer-cta">Apply for the Cohort →</a>
+  </div>
+</section>
+
+<!-- ═══ APPLY ══════════════════════════════════════════ -->
+<section class="apply-section section reveal" id="apply">
+  <div>
+    <div class="section-label">Join the cohort</div>
+    <h2 class="section-title">Ready to grow?<br><em>Let's partner.</em></h2>
+    <p style="font-size:0.95rem; font-weight:400; color:var(--text2); line-height:1.85; margin-top:1rem;">
+      Tell us about your brand. We review every application personally and respond within 48 hours. Spots are limited — don't wait.
+    </p>
+    <div class="apply-steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div>
+          <div class="step-title">Fill the application</div>
+          <div class="step-desc">Share your brand details, current state, and growth goals.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div>
+          <div class="step-title">Discovery call</div>
+          <div class="step-desc">We deep-dive into your challenges and vision together.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div>
+          <div class="step-title">Partnership begins</div>
+          <div class="step-desc">We plug in within 72 hours. Execution starts immediately.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div>
+    <div class="form-card">
+      <div class="form-head">Apply for Partnership</div>
+      <div class="form-sub">All fields required. We'll respond within 48 hours.</div>
+      <form id="partnerForm" novalidate>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="f-name">Your Name</label>
+            <input class="form-input" id="f-name" name="name" type="text" placeholder="Arjun Sharma" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="f-brand">Brand Name</label>
+            <input class="form-input" id="f-brand" name="brand" type="text" placeholder="Your Brand" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="f-email">Email</label>
+            <input class="form-input" id="f-email" name="email" type="email" placeholder="you@brand.com" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="f-phone">Phone</label>
+            <input class="form-input" id="f-phone" name="phone" type="tel" placeholder="+91 98765 43210" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="f-category">Category</label>
+            <select class="form-select" id="f-category" name="category" required>
+              <option value="" disabled selected>Select category</option>
+              <option>Personal Care / Beauty</option>
+              <option>Health &amp; Nutrition</option>
+              <option>Fashion &amp; Apparel</option>
+              <option>Home &amp; Kitchen</option>
+              <option>Food &amp; Beverage</option>
+              <option>Baby &amp; Kids</option>
+              <option>Sports &amp; Fitness</option>
+              <option>Electronics &amp; Gadgets</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="f-stage">Current Stage</label>
+            <select class="form-select" id="f-stage" name="stage" required>
+              <option value="" disabled selected>Select stage</option>
+              <option>Pre-launch (idea stage)</option>
+              <option>0–₹1Cr ARR</option>
+              <option>₹1Cr–₹10Cr ARR</option>
+              <option>₹10Cr–₹50Cr ARR</option>
+              <option>₹50Cr+ ARR</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="f-message">What's your biggest challenge right now?</label>
+          <textarea class="form-textarea" id="f-message" name="message" placeholder="Tell us about your brand, current operations, and what you need most help with..." required></textarea>
+        </div>
+        <button class="form-submit" type="submit" id="submitBtn">
+          <span id="submitText">Submit Application →</span>
+        </button>
+        <div class="form-msg" id="formMsg"></div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ════════════════════════════════════════ -->
+<footer>
+  <div>
+    <div class="footer-logo">Ops<span>Sathi</span></div>
+    <div class="footer-tagline">Your D2C execution partner. We handle everything from manufacturing to marketing so you can focus on building the brand.</div>
+  </div>
+  <div>
+    <div class="footer-col-title">Navigate</div>
+    <ul class="footer-links">
+      <li><a href="#services">Services</a></li>
+      <li><a href="#ai-edge">AI Edge</a></li>
+      <li><a href="#founders">Team</a></li>
+      <li><a href="#helped">Portfolio</a></li>
+      <li><a href="#apply">Apply Now</a></li>
+    </ul>
+  </div>
+  <div>
+    <div class="footer-col-title">Contact</div>
+    <ul class="footer-links">
+      <li><a href="mailto:hello@opssathi.com">hello@opssathi.com</a></li>
+      <li><a href="#apply">Apply for partnership</a></li>
+      <li><a href="#problem">Who we work with</a></li>
+    </ul>
+  </div>
+</footer>
+<div class="footer-bottom">
+  <span class="footer-copy">© 2025 OpsSathi. All rights reserved.</span>
+  <span class="footer-copy">D2C Execution Partner · India</span>
+</div>
+
+<!-- ═══ SCRIPTS ════════════════════════════════════════ -->
+<script>
+// ── Scroll reveal ──────────────────────────────────────
+// Mark JS as ready — this activates the hide-then-reveal CSS
+document.documentElement.classList.add('js-ready');
+
+const revealEls = document.querySelectorAll('.reveal');
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
+}, { threshold: 0.05, rootMargin: '0px 0px 60px 0px' });
+revealEls.forEach(el => io.observe(el));
+
+// Fallback: if observer never fires (some WebViews), reveal everything after 2s
+setTimeout(() => {
+  revealEls.forEach(el => el.classList.add('visible'));
+}, 2000);
+
+// ── Google Sheets form submission ──────────────────────
+// IMPORTANT: Replace this URL with your Google Apps Script deployment URL
+// Follow the setup instructions in the HTML comment at the top of this file.
+const GOOGLE_SCRIPT_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
+
+document.getElementById('partnerForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  const btn    = document.getElementById('submitBtn');
+  const txtEl  = document.getElementById('submitText');
+  const msgEl  = document.getElementById('formMsg');
+
+  // Basic validation
+  const fields = ['f-name','f-brand','f-email','f-phone','f-category','f-stage','f-message'];
+  const empty  = fields.some(id => !document.getElementById(id).value.trim());
+  if (empty) {
+    msgEl.className = 'form-msg error';
+    msgEl.textContent = 'Please fill in all fields before submitting.';
+    return;
+  }
+
+  // Disable & show loading
+  btn.disabled = true;
+  txtEl.textContent = 'Submitting…';
+  msgEl.className = 'form-msg';
+
+  const payload = {
+    name:     document.getElementById('f-name').value.trim(),
+    brand:    document.getElementById('f-brand').value.trim(),
+    email:    document.getElementById('f-email').value.trim(),
+    phone:    document.getElementById('f-phone').value.trim(),
+    category: document.getElementById('f-category').value,
+    stage:    document.getElementById('f-stage').value,
+    message:  document.getElementById('f-message').value.trim(),
+  };
+
+  // If URL not yet configured, show a clear developer notice
+  if (GOOGLE_SCRIPT_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE') {
+    setTimeout(() => {
+      msgEl.className = 'form-msg error';
+      msgEl.textContent = 'Developer: Please replace GOOGLE_SCRIPT_URL with your Apps Script deployment URL (see setup instructions in HTML comments).';
+      btn.disabled = false;
+      txtEl.textContent = 'Submit Application →';
+    }, 600);
+    return;
+  }
+
+  try {
+    // Google Apps Script requires text/plain to avoid CORS preflight issues
+    await fetch(GOOGLE_SCRIPT_URL, {
+      method:  'POST',
+      mode:    'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body:    JSON.stringify(payload),
+    });
+
+    // no-cors means we can't read the response — assume success
+    msgEl.className = 'form-msg success';
+    msgEl.textContent = 'Application received! We review every submission personally and will be in touch within 48 hours.';
+    this.reset();
+  } catch (err) {
+    msgEl.className = 'form-msg error';
+    msgEl.textContent = 'Something went wrong. Please try again or email us directly at hello@opssathi.com';
+  } finally {
+    btn.disabled = false;
+    txtEl.textContent = 'Submit Application →';
+  }
+});
+</script>
+</body>
+</html>
