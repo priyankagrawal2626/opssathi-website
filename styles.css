@@ -2124,7 +2124,7 @@ h3 {
 
 .form-actions {
   display: flex;
-  justify-content: flex-end;
+  flex-direction: column;
   gap: 12px;
   margin-top: 6px;
 }
