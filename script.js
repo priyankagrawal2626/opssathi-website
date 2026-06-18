@@ -355,7 +355,7 @@ const defaultFormNote = "We will reach out on WhatsApp to confirm your slot.";
 let currentFormStep = 0;
 
 const formStepFields = [
-  ["name", "phone", "email", "age", "gender", "society", "flat"],
+  ["name", "phone", "age", "gender", "society", "flat"],
   ["emergency-name", "relationship", "emergency-phone", "experience", "slot-first", "slot-second"],
   ["conditions", "medication"]
 ];
