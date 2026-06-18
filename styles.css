@@ -704,7 +704,7 @@ h3 {
   content: "";
   position: absolute;
   inset: 0;
-  background: url("assets/pattern-bg.png") center / cover no-repeat;
+  background: url("assets/pattern-bg.jpg") center / cover no-repeat;
   opacity: 0.28;
   mix-blend-mode: darken;
   filter: grayscale(1) contrast(1.75) brightness(0.7);
@@ -2166,6 +2166,20 @@ h3 {
   text-align: left;
 }
 
+.field-error {
+  font-size: 12px;
+  color: #c0392b;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.booking-form input.has-error,
+.booking-form select.has-error,
+.booking-form textarea.has-error {
+  border-color: #c0392b;
+  box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.1);
+}
+
 .booking-form .primary-cta:hover,
 .booking-form .primary-cta:focus-visible,
 .booking-form .secondary-cta:hover,
@@ -2213,7 +2227,7 @@ h3 {
   inset: 0;
   z-index: 0;
   display: block;
-  background: url("assets/pattern-bg.png") center / cover no-repeat;
+  background: url("assets/pattern-bg.jpg") center / cover no-repeat;
   opacity: 0.34;
   mix-blend-mode: darken;
   filter: grayscale(1) contrast(1.85) brightness(0.68);

@@ -450,11 +450,61 @@ bookingForm?.addEventListener("submit", (event) => {
     return;
   }
 
-  submit.textContent = "✓ Registered";
+  const showFieldError = (fieldName, message) => {
+    const field = form.elements[fieldName];
+    if (!field) return;
+    field.classList.add("has-error");
+    const existing = field.parentElement.querySelector(".field-error");
+    if (existing) existing.remove();
+    const err = document.createElement("span");
+    err.className = "field-error";
+    err.textContent = message;
+    field.insertAdjacentElement("afterend", err);
+    field.focus();
+    field.addEventListener("input", () => {
+      field.classList.remove("has-error");
+      err.remove();
+    }, { once: true });
+  };
+
+  let hasError = false;
+
+  const phoneVal = form.elements["phone"]?.value.trim().replace(/\D/g, "");
+  if (!phoneVal || phoneVal.length < 10) {
+    showFieldError("phone", "Please enter a valid phone number (at least 10 digits).");
+    hasError = true;
+  }
+
+  const ageVal = form.elements["age"]?.value.trim();
+  if (!ageVal || !/^\d{1,3}$/.test(ageVal)) {
+    showFieldError("age", "Please enter a valid age (1–3 digits).");
+    hasError = true;
+  }
+
+  if (hasError) return;
+
+  submit.textContent = "Submitting…";
   submit.disabled = true;
-  note.textContent = "Thank you. We will message you shortly with session details.";
-  formProgress?.forEach((step) => step.classList.add("completed"));
-  form.classList.add("is-submitted");
+
+  const data = Object.fromEntries(new FormData(form).entries());
+
+  fetch("https://script.google.com/macros/s/AKfycbwShCFf8ySPCDm8DmmiUtoWrIRvO2_Nu_f48PXQXzYjndj7ABLAexlPnuN-WieM2AVq/exec", {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "text/plain" },
+    body: JSON.stringify(data),
+  })
+    .then(() => {
+      submit.textContent = "✓ Registered";
+      note.textContent = "Thank you. We will message you shortly with session details.";
+      formProgress?.forEach((step) => step.classList.add("completed"));
+      form.classList.add("is-submitted");
+    })
+    .catch(() => {
+      submit.textContent = "SUBMIT REGISTRATION";
+      submit.disabled = false;
+      note.textContent = "Something went wrong. Please try again or WhatsApp us directly.";
+    });
 });
 
 const scrollParallaxItems = document.querySelectorAll("[data-scroll-parallax]");
